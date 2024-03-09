@@ -84,7 +84,7 @@ class User(AbstractUser):
     
 	password2 = models.CharField(max_length=128,null=True)
     
-	email = models.CharField(max_length=40,unique=True)  
+	email = models.EmailField(max_length=40,unique=True)  
     
 	phone_no = models.CharField(max_length=10, blank=True, null=True)
     
@@ -96,9 +96,13 @@ class User(AbstractUser):
     
 	organization_name = models.CharField(max_length=255, blank=True, null=True)
     
-	organization_type = models.CharField(max_length=100,choices=ORGANIZATION_TYPES , blank=True, null=True)
+	profession = models.CharField(max_length=100,blank=True, null=True)
     
 	organization_address = models.TextField(blank=True, null=True)
+     
+	lattitude = models.DecimalField(max_digits=10,decimal_places=4, blank=True, null=True)
+    
+	longitude = models.DecimalField(max_digits=10,decimal_places=4, blank=True, null=True)
     
 	location = models.CharField(max_length=100,choices=DISTRICT_CHOICES,blank=True, null=True)
     
@@ -119,6 +123,14 @@ class User(AbstractUser):
 	def __str__(self):
         
 		return self.get_full_name()
+
+
+class Team(models.Model):
+    username = models.CharField(max_length=100)
+    location = models.CharField(max_length=100)
+    disaster_type = models.CharField(max_length=100)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
 
 class Connection(models.Model):
 	sender = models.ForeignKey(
@@ -158,4 +170,27 @@ class Message(models.Model):
 		return self.user.username + ': ' + self.text
 
 
+class Room(models.Model):
+    WAITING = 'waiting'
+    ACTIVE = 'active'
+    CLOSED = 'closed'
 
+    CHOICES_STATUS = (
+        (WAITING, 'Waiting'),
+        (ACTIVE, 'Active'),
+        (CLOSED, 'Closed'),
+    )
+
+    uuid = models.CharField(max_length=255)
+    client = models.CharField(max_length=255)
+    agent = models.ForeignKey(User, related_name='rooms', blank=True, null=True, on_delete=models.SET_NULL)
+    messages = models.ManyToManyField(Message, blank=True)
+    url = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=CHOICES_STATUS, default=WAITING)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created_at',)
+    
+    def __str__(self):
+        return f'{self.client} - {self.uuid}'

@@ -5,10 +5,15 @@ import utils from './utils'
 
 //   Socket receive message handlers
 
-
 function responseFriendList(set, get, friendList) {
 	set((state) => ({
 		friendList: friendList
+	}))
+}
+
+function responseTeamList(set, get, TeamList) {
+	set((state) => ({
+		TeamList: TeamList
 	}))
 }
 
@@ -173,9 +178,6 @@ function responseThumbnail(set, get, data) {
 
 
 
-
-
-
 const useGlobal = create((set, get) => ({
 
 
@@ -240,7 +242,54 @@ const useGlobal = create((set, get) => ({
 		}))
 	},
 
-	
+
+	//edit
+
+	authenticated: false,
+  user: {},
+  editProfile: async (updatedProfileData) => {
+    try {
+      // Get the stored credentials from secure storage
+      const credentials = await secure.get('credentials');
+
+      if (!credentials) {
+        console.error('Credentials not found');
+        return;
+      }
+
+      // Perform an API call to update the user's profile on the server
+      const response = await api({
+        method: 'PUT',
+        url: '/chat/signup/',
+        data: {
+          username: credentials.username,
+          password: credentials.password,
+          // Include any other fields you want to update
+          ...updatedProfileData,
+        },
+      });
+
+      if (response.ok) {
+        // If the API call is successful, update the local state
+        set((state) => ({
+          user: {
+            ...state.user,
+            // Update user data with the new information
+            // You might receive this data in the API response or use the updatedProfileData directly
+            ...updatedProfileData,
+          },
+        }));
+
+        // Optionally, you can perform any additional actions after a successful edit
+        console.log('Profile edited successfully');
+      } else {
+        // Handle errors if the API call fails
+        console.error('Failed to edit profile:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error during profile edit:', error);
+    }
+  },
 
 	//     Websocket
 
@@ -261,6 +310,9 @@ const useGlobal = create((set, get) => ({
 			socket.send(JSON.stringify({
 				source: 'friend.list'
 			}))
+			socket.send(JSON.stringify({
+				source: 'team.list'
+			}))
 		}
 		socket.onmessage = (event) => {
 			// Convert data to javascript object
@@ -279,7 +331,8 @@ const useGlobal = create((set, get) => ({
 				'request.connect': responseRequestConnect,
 				'request.list':    responseRequestList,
 				'search':          responseSearch,
-				'thumbnail':       responseThumbnail
+				'thumbnail':       responseThumbnail,
+				'team.list':       responseTeamList,
 			}
 			const resp = responses[parsed.source]
 			if (!resp) {
@@ -327,6 +380,9 @@ const useGlobal = create((set, get) => ({
 			}))
 		}
 	},
+
+	//team
+	TeamList:null,
 
 	//     Requests
 
@@ -376,6 +432,8 @@ const useGlobal = create((set, get) => ({
 			username: username
 		}))
 	},
+
+
 
 	//     Requests
 

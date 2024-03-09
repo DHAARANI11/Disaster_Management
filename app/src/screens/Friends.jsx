@@ -32,6 +32,18 @@ function FriendRow({ navigation, item }) {
 						}}
 					>
 						{item.friend.name}
+						-(
+						{item.friend.profession}
+						)
+					</Text>
+					<Text
+						style={{
+							fontWeight: 'bold',
+							color: '#202020',
+							marginBottom: 4
+						}}
+					>
+						{item.friend.location}
 					</Text>
 					<Text
 						style={{

@@ -69,7 +69,7 @@ function HomeScreen({ navigation }) {
 						Location:'location',
 						Weather:'cloud',
 						Requests: 'bell',
-						Friends: 'inbox',
+						Rescuer: 'inbox',
 						Teams:'users',
 						Profile: 'user'
 					}
@@ -79,14 +79,15 @@ function HomeScreen({ navigation }) {
 					)
 				},
 				tabBarActiveTintColor: '#202020',
+				backgroundColor:'#faebd7',
 				tabBarShowLabel: false
 			})}
 		>
 			<Tab.Screen name="Location" component={LocationScreen} />
 			<Tab.Screen name="Weather" component={WeatherScreen} />
             <Tab.Screen name="Requests" component={RequestsScreen} />
-			<Tab.Screen name="Friends"  component={FriendsScreen} />
-			<Tab.Screen name="Teams" component={TeamScreen}/>
+			<Tab.Screen name="Rescuer"  component={FriendsScreen} />
+			
 			<Tab.Screen name="Profile"  component={ProfileScreen} />
     </Tab.Navigator>
 	)

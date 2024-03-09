@@ -29,6 +29,19 @@ function MessageHeader({ friend }) {
 				}}
 			>
 				{friend.name}
+				-(
+				{friend.profession}
+				)
+			</Text>
+			<Text
+				style={{
+					color: '#909090',
+					marginLeft: 10,
+					fontSize: 15,
+					fontWeight: 'bold'
+				}}
+			>
+				{friend.location}
 			</Text>
 		</View>
 	)

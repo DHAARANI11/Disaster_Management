@@ -14,6 +14,7 @@ import SignUpScreen from './src/screens/SignUp'
 import HomeScreen from './src/screens/Home'
 import SearchScreen from './src/screens/Search'
 import MessagesScreen from './src/screens/Message'
+import EditScreen from './src/screens/Editprofile'
 
 import useGlobal from './src/core/global'
 
@@ -58,6 +59,7 @@ function App() {
       			<Stack.Screen name="Home" component={HomeScreen} />
 						<Stack.Screen name="Search" component={SearchScreen} />
 						<Stack.Screen name="Messages" component={MessagesScreen} />
+						<Stack.Screen name="Editprofile" component={EditScreen} />
 					</>
 				)}
     	</Stack.Navigator>

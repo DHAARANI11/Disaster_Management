@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import User, Connection, Message
+from .models import User, Connection, Message, Room,Team
 
 class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,8 +15,10 @@ class SignUpSerializer(serializers.ModelSerializer):
 		    'address',
 		    'pincode',
 		    'organization_name',
-		    'organization_type',
+		    'profession',
 		    'organization_address',
+			'lattitude',
+			'longitude',
 		    'location',
 		    'Org_pincode',
             'password'
@@ -37,8 +39,11 @@ class SignUpSerializer(serializers.ModelSerializer):
         adhaar_no = validated_data.get('adhaar_no')
         address = validated_data.get('address')
         pincode = validated_data.get('pincode')
-        organization_name = validated_data.get('organization_name')
-        organization_type = validated_data.get('organization_type')
+        organization_name = validated_data.get('organization_name')	
+        organization_address=validated_data.get('organization_address')
+        profession= validated_data.get('profession')
+        lattitude=validated_data.get('lattitude')
+        longitude=validated_data.get('longitude')
         location = validated_data.get('location')
         Org_pincode = validated_data.get('Org_pincode')
 
@@ -54,8 +59,11 @@ class SignUpSerializer(serializers.ModelSerializer):
 			adhaar_no=adhaar_no,
 			address=address,
 			pincode=pincode,
+			organization_address=organization_address,
 			organization_name=organization_name,
-			organization_type=organization_type,
+			profession=profession,
+			lattitude=lattitude,
+			longitude=longitude,
 			location=location,
 			Org_pincode=Org_pincode
         )
@@ -82,8 +90,10 @@ class UserSerializer(serializers.ModelSerializer):
 			'address',
 			'pincode',
 			'organization_name',
-			'organization_type',
+			'profession',
 			'organization_address',
+			'lattitude',
+			'longitude',
 			'location',
 			'Org_pincode',
 			'thumbnail'
@@ -102,6 +112,8 @@ class SearchSerializer(UserSerializer):
 		fields = [
 			'username',
 			'name',
+			'location',
+			'profession',
 			'thumbnail',
 			'status'
 		]
@@ -184,15 +196,29 @@ class MessageSerializer(serializers.ModelSerializer):
 		return self.context['user'] == obj.user
 
 
-'''
-class GroupChatMessageSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    message = serializers.CharField()
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['uuid', 'client', 'agent', 'messages', 'url', 'status', 'created_at']
 
-    def to_representation(self, instance):
-        return {
-            'username': instance['username'],
-            'message': instance['message'],
-        }
-'''
 
+class GroupMessageSerializer(serializers.ModelSerializer):
+    sender = serializers.CharField(source='user.username', read_only=True)
+    is_sender = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ['id', 'sender', 'text', 'created', 'is_sender']
+
+    def get_is_sender(self, obj):
+        return self.context['user'].username == obj.user.username
+
+class TeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = [
+			'username',
+			'latitude',
+			'longitude',
+			'disaster_type',
+		]

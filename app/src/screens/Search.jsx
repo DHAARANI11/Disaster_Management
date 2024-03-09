@@ -113,6 +113,20 @@ function SearchRow({ user }) {
 				>
 					{user.username}
 				</Text>
+				<Text
+					style={{
+						color: '#606060',
+					}}
+				>
+					{user.location}
+				</Text>
+				<Text
+					style={{
+						color: '#606060',
+					}}
+				>
+					{user.profession}
+				</Text>
 			</View>
 			<SearchButton user={user} />
 		</Cell>
@@ -132,34 +146,7 @@ function SearchScreen() {
 		searchUsers(query)
 	}, [query]) 
 
-	/*
-	const searchList = [
-		{
-			thumbnail: null,
-			name: 'Silly Name',
-			username: 'sillyn',
-			status: 'pending-them'
-		},
-		{
-			thumbnail: null,
-			name: 'Silly Something',
-			username: 'sillya',
-			status: 'pending-me'
-		},
-		{
-			thumbnail: null,
-			name: 'Silly Red',
-			username: 'sillyb',
-			status: 'connected'
-		},
-		{
-			thumbnail: null,
-			name: 'Silly Blue',
-			username: 'sillyc',
-			status: 'no-connection'
-		}
-	]
-	*/
+	
 
 	return (
 		<SafeAreaView style={{ flex: 1 }}>

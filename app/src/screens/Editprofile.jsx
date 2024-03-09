@@ -7,7 +7,7 @@ function EditScreen(){
     return(
         <SafeAreaView>
             <Text>
-             
+              Teams
             </Text>
         </SafeAreaView>
     )

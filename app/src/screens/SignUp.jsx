@@ -26,8 +26,10 @@ function SignUpScreen({ navigation }) {
 	const [address, setAddress] = useState('')
 	const [pincode, setPincode] = useState('')
 	const [organization_name, setOrganization_name] = useState('')
-	const [organization_type, setOrganization_type] = useState('')
+	const [profession, setProfession] = useState('')
 	const [organization_address, setOrganization_address] = useState('')
+	const [lattitude, setLattitude] = useState('')
+	const [longitude, setLongitude] = useState('')
 	const [location, setLocation] = useState('')
 	const [Org_pincode, setOrg_Pincode] = useState('')
 	const [password1, setPassword1] = useState('')
@@ -42,8 +44,10 @@ function SignUpScreen({ navigation }) {
 	const [addressError, setAddressError] = useState('')
 	const [pincodeError, setPincodeError] = useState('')
 	const [organization_nameError, setOrganization_nameError] = useState('')
-	const [organization_typeError, setOrganization_typeError] = useState('')
+	const [professionError, setProfessionError] = useState('')
 	const [organization_addressError, setOrganization_addressError] = useState('')
+	const [lattitudeError, setLattitudeError] = useState('')
+	const [longitudeError, setLongitudeError] = useState('')
 	const [locationError, setLocationError] = useState('')
 	const [Org_pincodeError, setOrg_PincodeError] = useState('')
 	const [password1Error, setPassword1Error] = useState('')
@@ -99,13 +103,21 @@ function SignUpScreen({ navigation }) {
 		if (failOrganization_name) {
 			setOrganization_nameError('Organization name was not provided')
 		}
-		const failOrganization_type= !organization_type
-		if (failOrganization_type) {
-			setOrganization_typeError('Organization type was not provided')
+		const failProfession= !profession
+		if (failProfession) {
+			setProfessionError('Organization type was not provided')
 		}
 		const failOrganization_address = !organization_address
 		if (failOrganization_address) {
 			setOrganization_addressError('Organization address was not provided')
+		}
+		const failLattitude = !lattitude
+		if (failLattitude) {
+			setLattitudeError('location was not provided')
+		}
+		const failLongitude = !longitude
+		if (failLongitude) {
+			setLongitudeError('location was not provided')
 		}
 		const failLocation = !location
 		if (failLocation) {
@@ -135,8 +147,10 @@ function SignUpScreen({ navigation }) {
 			    failAddress||
 			    failPincode||
 			    failOrganization_name||
-			    failOrganization_type||
+			    failProfession||
 			    failOrganization_address||
+				failLattitude||
+				failLongitude||
 			    failLocation||
 			    failOrg_Pincode||
 				failPassword1 ||
@@ -158,8 +172,10 @@ function SignUpScreen({ navigation }) {
 				address:address,
 				pincode:pincode,
 				organization_name:organization_name,
-				organization_type:organization_type,
+				profession:profession,
 				organization_address:organization_address,
+				lattitude:lattitude,
+				longitude:longitude,
 				location:location,
 				Org_pincode:Org_pincode,
 				password: password1
@@ -283,11 +299,11 @@ function SignUpScreen({ navigation }) {
 							setError={setOrganization_nameError}
 						/>
 						<Input 
-							title='Organization Type'
-							value={organization_type}
-							error={organization_typeError}
-							setValue={setOrganization_type}
-							setError={setOrganization_typeError}
+							title='Profession'
+							value={profession}
+							error={professionError}
+							setValue={setProfession}
+							setError={setProfessionError}
 						/>
 						<Input 
 							title='Organization Address'
@@ -295,6 +311,20 @@ function SignUpScreen({ navigation }) {
 							error={organization_addressError}
 							setValue={setOrganization_address}
 							setError={setOrganization_addressError}
+						/>
+						<Input 
+							title='Organization lattitude'
+							value={lattitude}
+							error={lattitudeError}
+							setValue={setLattitude}
+							setError={setLattitudeError}
+						/>
+						<Input 
+							title='Organization longitude'
+							value={longitude}
+							error={longitudeError}
+							setValue={setLongitude}
+							setError={setLongitudeError}
 						/>
 						<Input 
 							title='Organization location'

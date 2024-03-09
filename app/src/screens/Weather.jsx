@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
-import apiKey from '../core/config';
-import useGlobal from '../core/global';
+import React, { useEffect, useState } from 'react'
+import { View, Text, ScrollView, StyleSheet } from 'react-native'
+import apiKey from '../core/config'
+import useGlobal from '../core/global'
 
 const WeatherReport = ({ location }) => {
   const [weatherData, setWeatherData] = useState(null);
@@ -140,24 +140,70 @@ const WeatherReport = ({ location }) => {
 
       {earthquakeAlert && <Text>Earthquake alert: There are recent earthquakes in the area.</Text>}
     </View>
-  );
-};
+  )
+}
+
+const statesInTamilNadu = [
+    'Ariyalur',
+    'Chennai',
+    'Coimbatore',
+    'Cuddalore',
+    'Dharmapuri',
+    'Dindigul',
+    'Erode',
+    'Kanchipuram',
+    'Kanyakumari',
+    'Karur',
+    'Krishnagiri',
+    'Madurai',
+    'Nagapattinam',
+    'Namakkal',
+    'Perambalur',
+    'Pudukkottai',
+    'Ramanathapuram',
+    'Salem',
+    'Sivagangai',
+    'Thanjavur',
+    'Theni',
+    'Thiruvallur',
+    'Thiruvarur',
+    'Thoothukudi',
+    'Tiruchirappalli',
+    'Tirunelveli',
+    'Tiruppur',
+    'Trichy',
+    'Tuticorin',
+    'Vellore',
+    'Villupuram',
+    'Virudhunagar',
+
+];
+
 
 const WeatherScreen = () => {
-  const user = useGlobal(state => state.user)
     return (
-      <View>
-        {/* Other components */}
-        <WeatherReport location>
-        <Text 
-        style={{
-          fontWeight: 'bold',
-          textAlign: 'left',
-          color: '#303030',
-          fontSize: 20,
-          top:20}}>{user.location}</Text>{user.location}</WeatherReport>
-      </View>
-    );
-  };
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      {statesInTamilNadu.map((state, index) => (
+        <View key={index} style={styles.weatherReportContainer}>
+          <WeatherReport location={state} />
+          <View style={styles.spacing} />
+        </View>
+      ))}
+    </ScrollView>
+    )
+  }
+
+
+  const styles = StyleSheet.create({
+    scrollViewContent: {
+      flexGrow: 2,
+    },
+    weatherReportContainer: {
+      marginBottom: 20, 
+    },
+    spacing: {
+      height: 100, 
+    },
+  })
   
-  export default WeatherScreen;
+  export default WeatherScreen

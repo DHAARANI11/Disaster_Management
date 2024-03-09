@@ -2,13 +2,15 @@ import base64
 import json
 
 from asgiref.sync import async_to_sync
+from asgiref.sync import sync_to_async
 from channels.generic.websocket import WebsocketConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.core.files.base import  ContentFile
 from django.db.models import Q, Exists, OuterRef
 from django.db.models.functions import Coalesce
-
-from .models import User, Connection, Message
+from django.utils.timesince import timesince
+from .models import User, Connection, Message, Room
+from geopy.distance import geodesic
 
 from .serializers import (
 	UserSerializer, 
@@ -16,6 +18,7 @@ from .serializers import (
 	RequestSerializer, 
 	FriendSerializer,
 	MessageSerializer,
+	RoomSerializer
 )
 
 
@@ -317,7 +320,9 @@ class ChatConsumer(WebsocketConsumer):
 		users = User.objects.filter(
 			Q(username__istartswith=query)   |
 			Q(first_name__istartswith=query) |
-			Q(last_name__istartswith=query)
+			Q(last_name__istartswith=query)|
+			Q(location__istartswith=query)|
+			Q(profession__istartswith=query)
 		).exclude(
 			username=self.username
 		).annotate(
@@ -390,16 +395,133 @@ class ChatConsumer(WebsocketConsumer):
 			- data: what ever you want to send as a dict
 		'''
 		self.send(text_data=json.dumps(data))
-		
 '''
+	@sync_to_async 
+	def get_room(self):
+		self.room = Room.objects.get(uuid=self.room_name)
+
+    
+	@sync_to_async
+	def set_room_closed(self):
+		self.room = Room.objects.get(uuid=self.room_name)
+		self.room.status = Room.CLOSED
+		self.room.save()
+
+    
+	@sync_to_async
+	def create_message(self, sent_by, message, agent):
+		message = Message.objects.create(body=message, sent_by=sent_by)
+	    
+		if agent:
+			message.created_by = User.objects.get(pk=agent)
+			message.save()
+		self.room.messages.add(message)
+    
+	    
+		return message
+
+
+'''
+
+class TeamConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        pass
+
+    async def receive(self, text_data):
+        # Receive the message from the client (if needed)
+        data = json.loads(text_data)
+
+        # Get the team data based on the received message
+        team_data = await self.get_team_data(data)
+
+        # Send the team data back to the client
+        await self.send_team_data(team_data)
+
+    @sync_to_async
+    def get_team_data(self, data):
+        target_location = data.get('target_location')
+        target_disaster_type = data.get('target_disaster_type')
+        severity_level = data.get('severity_level')
+        target_latitude = data.get('target_latitude')
+        target_longitude = data.get('target_longitude')
+
+        users = User.objects.filter()
+
+        if severity_level == 'low':
+            if target_disaster_type == 'earthquake':
+                needed_professions = {
+                    'doctor': 2,
+                    'nurse': 5,
+                    'police': 5,
+                    'ambulance': 3,
+                    'rescue_worker': 2,
+                    'engineer': 2,
+                    'geologist': 2
+                }
+                min_threshold_distance = 10
+        elif severity_level == 'medium':
+            needed_professions = {
+                'doctor': 4,
+                'nurse': 10,
+                'police': 8,
+                'ambulance': 5,
+                'rescue_worker': 7
+            }
+            min_threshold_distance = 20
+        elif severity_level == 'high':
+            needed_professions = {
+                'doctor': 6,
+                'nurse': 15,
+                'police': 12,
+                'ambulance': 8,
+                'rescue_worker': 9
+            }
+            min_threshold_distance = 30
+        else:
+            needed_professions = {
+                'doctor': 3,
+                'nurse': 8,
+                'police': 6,
+                'ambulance': 4
+            }
+            min_threshold_distance = 10
+
+        team_members = []
+        threshold_distance = min_threshold_distance
+        for profession, count in needed_professions.items():
+            users_of_profession = users.filter(profession=profession)[:count]
+            for user in users_of_profession:
+                user_latitude = user.latitude
+                user_longitude = user.longitude
+                distance = geodesic((target_latitude, target_longitude), (user_latitude, user_longitude)).kilometers
+                if distance <= threshold_distance:
+                    team_members.append({
+                        'name': user.username,
+                        'location': user.location,
+                        'profession': user.profession,
+                        'phone_no': user.phone_no
+                    })
+            else:
+                threshold_distance *= 10
+
+        return team_members
+
+    async def send_team_data(self, team_data):
+        await self.send(text_data=json.dumps({'team_members': team_data}))
+
+
 class GroupChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.group_name = self.scope['url_route']['kwargs']['group_name']
         self.username = self.scope['user'].username
+        self.location = self.scope['user'].profile.location  # Assuming location data is stored in the user's profile
 
-        # Join room/group
+        # Join room/group based on location
         await self.channel_layer.group_add(
-            self.group_name,
+            f"{self.group_name}_{self.location}",
             self.channel_name
         )
 
@@ -408,7 +530,7 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         # Leave room/group
         await self.channel_layer.group_discard(
-            self.group_name,
+            f"{self.group_name}_{self.location}",
             self.channel_name
         )
 
@@ -416,55 +538,27 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         message_type = data['type']
 
-        if message_type == 'create_group':
-            await self.create_group(data['group_name'])
-
-        elif message_type == 'join_group':
-            await self.join_group(data['group_name'])
-
-        elif message_type == 'leave_group':
-            await self.leave_group(data['group_name'])
-
-        elif message_type == 'send_message':
+        if message_type == 'send_message':
             await self.send_group_message(data['message'])
 
-    async def create_group(self, group_name):
-        # Additional logic for creating a group, if needed
-        pass
-
-    async def join_group(self, group_name):
-        await self.channel_layer.group_add(
-            group_name,
-            self.channel_name
-        )
-
-        await self.send({
-            'type': 'group_message',
-            'message': f'{self.username} has joined the group.'
-        })
-
-    async def leave_group(self, group_name):
-        await self.channel_layer.group_discard(
-            group_name,
-            self.channel_name
-        )
-
-        await self.send({
-            'type': 'group_message',
-            'message': f'{self.username} has left the group.'
-        })
-
     async def send_group_message(self, message):
+        # Broadcast message to everyone in the group
         await self.channel_layer.group_send(
-            self.group_name,
+            f"{self.group_name}_{self.location}",
             {
                 'type': 'group_message',
-                'message': f'{self.username}: {message}'
+                'message': message,
+                'username': self.username
             }
         )
 
     async def group_message(self, event):
         # Send message to WebSocket
+        message = event['message']
+        username = event['username']
+        await self.send(text_data=json.dumps({
+            'type': 'group_message',
+            'message': message,
+            'username': username
+        }))
 
-        await self.send(text_data=json)
-'''

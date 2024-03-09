@@ -33,7 +33,6 @@ function RequestAccept({ item }) {
 
 function RequestRow({ item }) {
 	const message = 'Requested to connect with you'
-	//const time = '7m ago'
 
 	return (
 		<Cell>
@@ -44,17 +43,30 @@ function RequestRow({ item }) {
 			<View
 				style={{
 					flex: 1,
-					paddingHorizontal: 16
+					paddingHorizontal: 16,
 				}}
 			>
 				<Text
 					style={{
 						fontWeight: 'bold',
 						color: '#202020',
-						marginBottom: 4
+						marginBottom: 3
 					}}
 				>
 					{item.sender.name}
+					 -(
+					{item.sender.profession}
+					 )
+				</Text>
+				
+				<Text
+					style={{
+						fontWeight: 'bold',
+						color: '#202020',
+						marginBottom: 3
+					}}
+				>
+					{item.sender.location}
 				</Text>
 				<Text
 					style={{
